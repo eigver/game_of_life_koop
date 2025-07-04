@@ -1,14 +1,24 @@
+/*
+liberes ..\game_of_life_CPP\packages\raylib-5.5_win64_msvc16\raygui-4.0;
+        ..\game_of_life_CPP\packages\raylib-5.5_win64_msvc16\lib
+        raygui.lib;raylib.lib;raylibdll.lib;winmm.lib;
+
+
+
+
+*/
+
 #define _CRT_SECURE_NO_WARNINGS
 #define RAYGUI_IMPLEMENTATION
 #define RAYGUI_CUSTOM_ICONS     // Custom icons set required 
-#include "game_of_life_icons.h"
-#include "raygui.h"
-#include "raylib.h"
+#include "../game_of_life_CPP/packages/raylib-5.5_win64_msvc16/raygui-4.0/icons/game_of_life_icons.h"
+#include "../game_of_life_CPP/packages/raylib-5.5_win64_msvc16/raygui-4.0/src/raygui.h"
+#include "../game_of_life_CPP/packages/raylib-5.5_win64_msvc16/include/raylib.h"
 #include <iostream>
 #include <string>
 #include <vector>
-#include "D:\failse\vscode\game_of_life_koop\CPP_proj\game_of_life_CPP\packages\raylib-5.5_win64_msvc16\raygui-4.0\styles\dark\style_dark.h"
-#include "D:\failse\vscode\game_of_life_koop\CPP_proj\game_of_life_CPP\packages\raylib-5.5_win64_msvc16\raygui-4.0\styles\jungle\style_jungle.h"
+#include "../game_of_life_CPP/packages/raylib-5.5_win64_msvc16/raygui-4.0/styles/dark/style_dark.h"
+#include "../game_of_life_CPP/packages/raylib-5.5_win64_msvc16/raygui-4.0/styles/jungle/style_jungle.h"
 using namespace std;
 
 /*******************************************************************************************
