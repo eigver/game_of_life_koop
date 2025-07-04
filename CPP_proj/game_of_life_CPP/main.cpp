@@ -389,7 +389,8 @@ void ScreenUpdate(void)
 
         // Wait for 2 seconds (120 frames) before jumping to TITLE screen
         if (framesCounter > 120)
-        {
+        {   
+            visualStyleActive = 1;
             currentScreen = TITLE;
         }
     } break;
