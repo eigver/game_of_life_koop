@@ -71,9 +71,11 @@ GameScreen currentScreen = LOGO;
 static int framesCounter = 0;
 static bool gameOver = false;
 static bool pause = false;
+
 bool fullscreen = false;
 static int monitorWidth = GetScreenWidth();
 static int monitorHeight = GetScreenHeight();
+
 static int CurrentScreenWidth = DefScreenWidth;
 static int CurrentScreenHeight = DefScreenHeight;
 int visualStyleActive = 2;
@@ -137,15 +139,29 @@ int main(void)
 
 void DrawSetingsGui(void)
 {
-    int setingsButtonWeidth = CurrentScreenWidth * 0.2;
-    int setingsButtonHeight = CurrentScreenHeight * 0.15;
-    int setingsButtonPosX = CurrentScreenWidth * 0.5 - setingsButtonWeidth * 0.5;
-    int setingsButtonPosY = CurrentScreenHeight * 0.7 - setingsButtonHeight * 0.5;
-    if (IsWindowFullscreen()) {
-        if (GuiButton(Rectangle{ 24, 24, 120, 30,}, "#220#fullscreen")) ToggleFullscreen();
+    float setingsButtonWeidth = CurrentScreenWidth * 0.2;
+    float setingsButtonHeight = CurrentScreenHeight * 0.15;
+    float setingsButtonPosX = CurrentScreenWidth * 0.5 - setingsButtonWeidth * 0.5;
+    float setingsButtonPosY = CurrentScreenHeight * 0.7 - setingsButtonHeight * 0.5;
+    string textONfullscreenButton = "";
+    
+    /*if (IsWindowFullscreen()) {
+        textONfullscreenButton = "#220#fullscreen";
     }
     else {
-        if (GuiButton(Rectangle{ 24, 24, 120, 30 }, "#53#fullscreen")) ToggleFullscreen();
+        textONfullscreenButton = "#53#fullscreen";
+    }*/
+
+    if (fullscreen) {
+        textONfullscreenButton = "#220#fullscreen";
+    }
+    else {
+        textONfullscreenButton = "#53#fullscreen";
+    }
+  
+    if (GuiButton(Rectangle{ setingsButtonPosX, setingsButtonPosY, setingsButtonWeidth, setingsButtonHeight }, textONfullscreenButton.c_str()))
+    {
+        fullscreen = !fullscreen;
     }
 }
 
@@ -288,6 +304,7 @@ void DrawGame(void)
     BeginDrawing();
 
     ClearBackground(RAYWHITE);
+    /* надо поправить утечку памти связаную с передогрузкой текстур
     if (visualStyleActive != prevVisualStyleActive)
     {
         GuiLoadStyleDefault();
@@ -304,7 +321,7 @@ void DrawGame(void)
 
         prevVisualStyleActive = visualStyleActive;
     }
-
+    */
     switch (currentScreen)
     {
     case LOGO:
