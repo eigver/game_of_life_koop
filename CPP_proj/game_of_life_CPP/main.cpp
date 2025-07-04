@@ -1,3 +1,8 @@
+#define _CRT_SECURE_NO_WARNINGS
+#define RAYGUI_IMPLEMENTATION
+#define RAYGUI_CUSTOM_ICONS     // Custom icons set required 
+#include "game_of_life_icons.h"
+#include "raygui.h"
 #include "raylib.h"
 #include <iostream>
 #include <string>
@@ -43,16 +48,23 @@ struct Food {
     bool active;
     Color color;
 };
+enum GameScreen { LOGO = 0, TITLE, GAMEPLAY, ENDING, SETTINGS };
 
 //------------------------------------------------------------------------------------
 // Global Variables Declaration
 //------------------------------------------------------------------------------------
-static const int screenWidth = 800;
-static const int screenHeight = 450;
-
+static const int DefScreenWidth = 800;
+static const int DefScreenHeight = 450;
+GameScreen currentScreen = LOGO;
 static int framesCounter = 0;
 static bool gameOver = false;
 static bool pause = false;
+bool fullscreen = false;
+static int monitorWidth = GetScreenWidth();
+static int monitorHeight = GetScreenHeight();
+static int CurrentScreenWidth = DefScreenWidth;
+static int CurrentScreenHeight = DefScreenHeight;
+
 
 static Food fruit = { 0 };
 static Snake snake[SNAKE_LENGTH] = { 0 };
@@ -67,8 +79,10 @@ static int counterTail = 0;
 static void InitGame(void);         // Initialize game
 static void UpdateGame(void);       // Update game (one frame)
 static void DrawGame(void);         // Draw game (one frame)
+static void ScreenUpdate(void);
 static void UnloadGame(void);       // Unload game
 static void UpdateDrawFrame(void);  // Update and Draw (one frame)
+static void DrawSetingsGui(void);
 
 //------------------------------------------------------------------------------------
 // Program main entry point
@@ -77,13 +91,11 @@ int main(void)
 {
     // Initialization (Note windowTitle is unused on Android)
     //---------------------------------------------------------
-    InitWindow(screenWidth, screenHeight, "classic game: snake");
-
+    InitWindow(CurrentScreenWidth, CurrentScreenHeight, "game of life");
     InitGame();
+    
 
-#if defined(PLATFORM_WEB)
-    emscripten_set_main_loop(UpdateDrawFrame, 60, 1);
-#else
+
     SetTargetFPS(60);
     //--------------------------------------------------------------------------------------
 
@@ -95,7 +107,7 @@ int main(void)
         UpdateDrawFrame();
         //----------------------------------------------------------------------------------
     }
-#endif
+
     // De-Initialization
     //--------------------------------------------------------------------------------------
     UnloadGame();         // Unload loaded data (textures, sounds, models...)
@@ -110,6 +122,20 @@ int main(void)
 // Module Functions Definitions (local)
 //------------------------------------------------------------------------------------
 
+void DrawSetingsGui(void)
+{
+    int setingsButtonWeidth = CurrentScreenWidth * 0.2;
+    int setingsButtonHeight = CurrentScreenHeight * 0.15;
+    int setingsButtonPosX = CurrentScreenWidth * 0.5 - setingsButtonWeidth * 0.5;
+    int setingsButtonPosY = CurrentScreenHeight * 0.7 - setingsButtonHeight * 0.5;
+    if (IsWindowFullscreen()) {
+        if (GuiButton(Rectangle{ 24, 24, 120, 30,}, "#220#fullscreen")) ToggleFullscreen();
+    }
+    else {
+        if (GuiButton(Rectangle{ 24, 24, 120, 30 }, "#53#fullscreen")) ToggleFullscreen();
+    }
+}
+
 // Initialize game variables
 void InitGame(void)
 {
@@ -120,8 +146,8 @@ void InitGame(void)
     counterTail = 1;
     allowMove = false;
 
-    offset.x = screenWidth % SQUARE_SIZE;
-    offset.y = screenHeight % SQUARE_SIZE;
+    offset.x = CurrentScreenWidth % SQUARE_SIZE;
+    offset.y = CurrentScreenHeight % SQUARE_SIZE;
 
     for (int i = 0; i < SNAKE_LENGTH; i++)
     {
@@ -192,8 +218,8 @@ void UpdateGame(void)
             }
 
             // Wall behaviour
-            if (((snake[0].position.x) > (screenWidth - offset.x)) ||
-                ((snake[0].position.y) > (screenHeight - offset.y)) ||
+            if (((snake[0].position.x) > (CurrentScreenWidth - offset.x)) ||
+                ((snake[0].position.y) > (CurrentScreenHeight - offset.y)) ||
                 (snake[0].position.x < 0) || (snake[0].position.y < 0))
             {
                 gameOver = true;
@@ -209,13 +235,13 @@ void UpdateGame(void)
             if (!fruit.active)
             {
                 fruit.active = true;
-                fruit.position = Vector2{ GetRandomValue(0, (screenWidth / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.x / 2, GetRandomValue(0, (screenHeight / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.y / 2 };
+                fruit.position = Vector2{ GetRandomValue(0, (CurrentScreenWidth / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.x / 2, GetRandomValue(0, (CurrentScreenHeight / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.y / 2 };
 
                 for (int i = 0; i < counterTail; i++)
                 {
                     while ((fruit.position.x == snake[i].position.x) && (fruit.position.y == snake[i].position.y))
                     {
-                        fruit.position = Vector2{ GetRandomValue(0, (screenWidth / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.x / 2, GetRandomValue(0, (screenHeight / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.y / 2 };
+                        fruit.position = Vector2{ GetRandomValue(0, (CurrentScreenWidth / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.x / 2, GetRandomValue(0, (CurrentScreenHeight / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.y / 2 };
                         i = 0;
                     }
                 }
@@ -237,7 +263,7 @@ void UpdateGame(void)
     {
         if (IsKeyPressed(KEY_ENTER))
         {
-            InitGame();
+            currentScreen = GAMEPLAY;
             gameOver = false;
         }
     }
@@ -250,30 +276,135 @@ void DrawGame(void)
 
     ClearBackground(RAYWHITE);
 
-    if (!gameOver)
+    switch (currentScreen)
     {
-        // Draw grid lines
-        for (int i = 0; i < screenWidth / SQUARE_SIZE + 1; i++)
+    case LOGO:
+    {
+        // TODO: Draw LOGO screen here!
+        DrawText("LOGO SCREEN", 20, 20, 40, LIGHTGRAY);
+        DrawText("WAIT for 2 SECONDS...", 290, 220, 20, GRAY);
+
+    } break;
+    case TITLE:
+    {
+        // TODO: Draw TITLE screen here!
+
+        
+        DrawRectangle(0, 0, CurrentScreenWidth, CurrentScreenHeight, GREEN);
+        DrawText("TITLE SCREEN", 20, 20, 40, DARKGREEN);
+        DrawText("PRESS ENTER or TAP to JUMP to GAMEPLAY SCREEN", 120, 220, 20, DARKGREEN);
+        float setingsButtonWeidth = CurrentScreenWidth * 0.2;
+        float setingsButtonHeight = CurrentScreenHeight * 0.15;
+        float setingsButtonPosX = CurrentScreenWidth * 0.5 - setingsButtonWeidth * 0.5;
+        float setingsButtonPosY = CurrentScreenHeight * 0.7 - setingsButtonHeight * 0.5;
+        if (GuiButton(Rectangle{ setingsButtonPosX, setingsButtonPosY, setingsButtonWeidth, setingsButtonHeight, }, "#221#settings")) currentScreen = SETTINGS;
+
+    } break;
+    case GAMEPLAY:
+    {
+        // TODO: Draw GAMEPLAY screen here!
+        if (!gameOver)
         {
-            DrawLineV(Vector2 { SQUARE_SIZE* i + offset.x / 2, offset.y / 2 }, Vector2 { SQUARE_SIZE* i + offset.x / 2, screenHeight - offset.y / 2 }, LIGHTGRAY);
+            // Draw grid lines
+            for (int i = 0; i < CurrentScreenWidth / SQUARE_SIZE + 1; i++)
+            {
+                DrawLineV(Vector2{ SQUARE_SIZE * i + offset.x / 2, offset.y / 2 }, Vector2{ SQUARE_SIZE * i + offset.x / 2, CurrentScreenHeight - offset.y / 2 }, LIGHTGRAY);
+            }
+
+            for (int i = 0; i < CurrentScreenHeight / SQUARE_SIZE + 1; i++)
+            {
+                DrawLineV(Vector2{ offset.x / 2, SQUARE_SIZE * i + offset.y / 2 }, Vector2{ CurrentScreenWidth - offset.x / 2, SQUARE_SIZE * i + offset.y / 2 }, LIGHTGRAY);
+            }
+
+            // Draw snake
+            for (int i = 0; i < counterTail; i++) DrawRectangleV(snake[i].position, snake[i].size, snake[i].color);
+
+            // Draw fruit to pick
+            DrawRectangleV(fruit.position, fruit.size, fruit.color);
+
+            if (pause) DrawText("GAME PAUSED", CurrentScreenWidth / 2 - MeasureText("GAME PAUSED", 40) / 2, CurrentScreenHeight / 2 - 40, 40, GRAY);
         }
+        else currentScreen = ENDING;
+       
 
-        for (int i = 0; i < screenHeight / SQUARE_SIZE + 1; i++)
-        {
-            DrawLineV(Vector2 { offset.x / 2, SQUARE_SIZE* i + offset.y / 2 }, Vector2 { screenWidth - offset.x / 2, SQUARE_SIZE* i + offset.y / 2 }, LIGHTGRAY);
-        }
+    } break;
+    case ENDING:
+    {
+        // TODO: Draw ENDING screen here!
+        DrawRectangle(0, 0, CurrentScreenWidth, CurrentScreenHeight, BLUE);
+        DrawText("ENDING SCREEN", 20, 20, 40, DARKBLUE);
+        DrawText("PRESS ENTER or TAP to RETURN to TITLE SCREEN", 120, 220, 20, DARKBLUE);
 
-        // Draw snake
-        for (int i = 0; i < counterTail; i++) DrawRectangleV(snake[i].position, snake[i].size, snake[i].color);
+    } break;
+    case SETTINGS:
+    {
+        DrawRectangle(0, 0, CurrentScreenWidth, CurrentScreenHeight, GRAY);
+        DrawText("SETTINGS", 20, 20, 40, DARKGRAY);
+        DrawText("PRESS ENTER", 120, 220, 20, DARKGRAY);
+        DrawSetingsGui();
 
-        // Draw fruit to pick
-        DrawRectangleV(fruit.position, fruit.size, fruit.color);
-
-        if (pause) DrawText("GAME PAUSED", screenWidth / 2 - MeasureText("GAME PAUSED", 40) / 2, screenHeight / 2 - 40, 40, GRAY);
+    }break;
+    default: break;
     }
-    else DrawText("PRESS [ENTER] TO PLAY AGAIN", GetScreenWidth() / 2 - MeasureText("PRESS [ENTER] TO PLAY AGAIN", 20) / 2, GetScreenHeight() / 2 - 50, 20, GRAY);
+    
+
+
 
     EndDrawing();
+}
+
+// Update screen
+void ScreenUpdate(void)
+{
+    switch (currentScreen)
+    {
+    case LOGO:
+    {
+        // TODO: Update LOGO screen variables here!
+
+        framesCounter++;    // Count frames
+
+        // Wait for 2 seconds (120 frames) before jumping to TITLE screen
+        if (framesCounter > 120)
+        {
+            currentScreen = TITLE;
+        }
+    } break;
+    case TITLE:
+    {
+        // TODO: Update TITLE screen variables here!
+        InitGame();
+
+        // Press enter to change to GAMEPLAY screen
+        if (IsKeyPressed(KEY_ENTER))
+        {
+            currentScreen = GAMEPLAY;
+        }
+    } break;
+    case GAMEPLAY:
+    {
+        // TODO: Update GAMEPLAY screen variables here!
+
+
+        // Press enter to change to ENDING screen
+        if (IsKeyPressed(KEY_ENTER) || IsGestureDetected(GESTURE_TAP))
+        {
+            currentScreen = ENDING;
+        }
+    } break;
+    case ENDING:
+    {
+        // TODO: Update ENDING screen variables here!
+
+        // Press enter to return to TITLE screen
+        if (IsKeyPressed(KEY_ENTER) || IsGestureDetected(GESTURE_TAP))
+        {
+            currentScreen = TITLE;
+        }
+    } break;
+    default: break;
+    }
+
 }
 
 // Unload game variables
@@ -284,7 +415,11 @@ void UnloadGame(void)
 
 // Update and Draw (one frame)
 void UpdateDrawFrame(void)
-{
-    UpdateGame();
+{   
+    ScreenUpdate();
     DrawGame();
+    UpdateGame();
 }
+
+
+
