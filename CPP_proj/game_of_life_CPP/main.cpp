@@ -7,6 +7,8 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include "D:\failse\vscode\game_of_life_koop\CPP_proj\game_of_life_CPP\packages\raylib-5.5_win64_msvc16\raygui-4.0\styles\dark\style_dark.h"
+#include "D:\failse\vscode\game_of_life_koop\CPP_proj\game_of_life_CPP\packages\raylib-5.5_win64_msvc16\raygui-4.0\styles\jungle\style_jungle.h"
 using namespace std;
 
 /*******************************************************************************************
@@ -64,7 +66,8 @@ static int monitorWidth = GetScreenWidth();
 static int monitorHeight = GetScreenHeight();
 static int CurrentScreenWidth = DefScreenWidth;
 static int CurrentScreenHeight = DefScreenHeight;
-
+int visualStyleActive = 2;
+int prevVisualStyleActive = 2;
 
 static Food fruit = { 0 };
 static Snake snake[SNAKE_LENGTH] = { 0 };
@@ -275,6 +278,22 @@ void DrawGame(void)
     BeginDrawing();
 
     ClearBackground(RAYWHITE);
+    if (visualStyleActive != prevVisualStyleActive)
+    {
+        GuiLoadStyleDefault();
+
+        switch (visualStyleActive)
+        {
+        case 0: break;      // Default style
+        case 1: GuiLoadStyleJungle(); break;
+        case 2: GuiLoadStyleDark(); break;
+        default: break;
+        }
+
+        GuiSetStyle(LABEL, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
+
+        prevVisualStyleActive = visualStyleActive;
+    }
 
     switch (currentScreen)
     {
@@ -297,7 +316,11 @@ void DrawGame(void)
         float setingsButtonHeight = CurrentScreenHeight * 0.15;
         float setingsButtonPosX = CurrentScreenWidth * 0.5 - setingsButtonWeidth * 0.5;
         float setingsButtonPosY = CurrentScreenHeight * 0.7 - setingsButtonHeight * 0.5;
-        if (GuiButton(Rectangle{ setingsButtonPosX, setingsButtonPosY, setingsButtonWeidth, setingsButtonHeight, }, "#221#settings")) currentScreen = SETTINGS;
+        if (GuiButton(Rectangle{ setingsButtonPosX, setingsButtonPosY, setingsButtonWeidth, setingsButtonHeight, }, "#221#settings")) 
+        {
+            visualStyleActive = 2;
+            currentScreen = SETTINGS;
+        }
 
     } break;
     case GAMEPLAY:
@@ -378,6 +401,7 @@ void ScreenUpdate(void)
         // Press enter to change to GAMEPLAY screen
         if (IsKeyPressed(KEY_ENTER))
         {
+            visualStyleActive = 0;
             currentScreen = GAMEPLAY;
         }
     } break;
@@ -388,7 +412,8 @@ void ScreenUpdate(void)
 
         // Press enter to change to ENDING screen
         if (IsKeyPressed(KEY_ENTER) || IsGestureDetected(GESTURE_TAP))
-        {
+        {   
+            visualStyleActive = 0;
             currentScreen = ENDING;
         }
     } break;
@@ -399,6 +424,18 @@ void ScreenUpdate(void)
         // Press enter to return to TITLE screen
         if (IsKeyPressed(KEY_ENTER) || IsGestureDetected(GESTURE_TAP))
         {
+            visualStyleActive = 1;
+            currentScreen = TITLE;
+        }
+    } break;
+    case SETTINGS:
+    {
+        // TODO: Update ENDING screen variables here!
+
+        // Press enter to return to TITLE screen
+        if (IsKeyPressed(KEY_ENTER))
+        {
+            visualStyleActive = 1;
             currentScreen = TITLE;
         }
     } break;
