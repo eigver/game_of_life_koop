@@ -42,7 +42,7 @@ using namespace std;
 // Some Defines
 //----------------------------------------------------------------------------------
 #define SNAKE_LENGTH   256
-#define SQUARE_SIZE     31
+
 
 //----------------------------------------------------------------------------------
 // Types and Structures Definition
@@ -75,11 +75,13 @@ static bool pause = false;
 bool fullscreen = false;
 static int monitorWidth = GetScreenWidth();
 static int monitorHeight = GetScreenHeight();
+bool titleInitialized = false;
 
 static int CurrentScreenWidth = DefScreenWidth;
 static int CurrentScreenHeight = DefScreenHeight;
 int visualStyleActive = 2;
 int prevVisualStyleActive = 2;
+float SQUARE_SIZE = CurrentScreenHeight / 15;
 
 static Food fruit = { 0 };
 static Snake snake[SNAKE_LENGTH] = { 0 };
@@ -161,7 +163,7 @@ void DrawSetingsGui(void)
   
     if (GuiButton(Rectangle{ setingsButtonPosX, setingsButtonPosY, setingsButtonWeidth, setingsButtonHeight }, textONfullscreenButton.c_str()))
     {
-        ToggleFullscreen();
+        
         fullscreen = !fullscreen;
         if (fullscreen) {
             CurrentScreenHeight = monitorHeight;
@@ -171,7 +173,10 @@ void DrawSetingsGui(void)
             CurrentScreenHeight = DefScreenHeight;
             CurrentScreenWidth = DefScreenWidth;
         }
-        DrawGame();
+        CloseWindow();
+        InitWindow(CurrentScreenWidth, CurrentScreenHeight, "game of life");
+        ToggleFullscreen();
+        InitGame();
     }
 }
 
@@ -185,8 +190,8 @@ void InitGame(void)
     counterTail = 1;
     allowMove = false;
 
-    offset.x = CurrentScreenWidth % SQUARE_SIZE;
-    offset.y = CurrentScreenHeight % SQUARE_SIZE;
+    offset.x = CurrentScreenWidth % int(SQUARE_SIZE);
+    offset.y = CurrentScreenHeight % int(SQUARE_SIZE);
 
     for (int i = 0; i < SNAKE_LENGTH; i++)
     {
@@ -433,16 +438,20 @@ void ScreenUpdate(void)
     } break;
     case TITLE:
     {
-        // TODO: Update TITLE screen variables here!
-        InitGame();
+        if (!titleInitialized)
+        {
+            InitGame();
+            titleInitialized = true;
+        }
 
-        // Press enter to change to GAMEPLAY screen
         if (IsKeyPressed(KEY_ENTER))
         {
             visualStyleActive = 0;
             currentScreen = GAMEPLAY;
+            titleInitialized = false;
         }
     } break;
+
     case GAMEPLAY:
     {
         // TODO: Update GAMEPLAY screen variables here!
