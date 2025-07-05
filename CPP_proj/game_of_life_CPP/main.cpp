@@ -161,7 +161,17 @@ void DrawSetingsGui(void)
   
     if (GuiButton(Rectangle{ setingsButtonPosX, setingsButtonPosY, setingsButtonWeidth, setingsButtonHeight }, textONfullscreenButton.c_str()))
     {
+        ToggleFullscreen();
         fullscreen = !fullscreen;
+        if (fullscreen) {
+            CurrentScreenHeight = monitorHeight;
+            CurrentScreenWidth = monitorWidth;
+        }
+        else {
+            CurrentScreenHeight = DefScreenHeight;
+            CurrentScreenWidth = DefScreenWidth;
+        }
+        DrawGame();
     }
 }
 
